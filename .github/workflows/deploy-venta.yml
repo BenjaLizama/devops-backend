@@ -45,15 +45,19 @@ jobs:
     needs: build-and-push
     steps:
       - name: Desplegar vía AWS SSM
-        uses: peterkimzz/aws-ssm-command@v2.0.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-          instance-ids: ${{ secrets.AWS_INSTANCE_ID }}
-          working-directory: /home/ubuntu
-          comment: "Desplegando actualización de microservicio"
-          command: |
-            docker compose pull ms-venta
-            docker compose up -d ms-venta
-            docker image prune -f
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set aws_session_token ${{ secrets.AWS_SESSION_TOKEN }}
+          aws configure set region us-east-1
+          
+          aws ssm send-command \
+            --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "cd /home/ubuntu",
+              "docker compose pull ms-venta",
+              "docker compose up -d ms-venta",
+              "docker image prune -f"
+            ]' \
+            --comment "Desplegando actualización de ms-venta"

@@ -1,72 +1,63 @@
+version: '3.8'
+
 services:
 
   mysql:
     image: mysql:8
-
     container_name: mysql_db
-
     restart: always
-
     environment:
       MYSQL_ROOT_PASSWORD: root
-
-    ports:
-      - "3306:3306"
-
+    command: --init-file=/data/application/init.sql
+    entrypoint:
+      - bash
+      - -c
+      - |
+        mkdir -p /data/application
+        echo "CREATE DATABASE IF NOT EXISTS venta_db; CREATE DATABASE IF NOT EXISTS despacho_db;" > /data/application/init.sql
+        exec docker-entrypoint.sh mysqld
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-
     networks:
-      - app-network
+      - capa-datos
 
   ms-despacho:
-    build:
-      context: ./API-REST-DESPACHO
-
+    image: benjalizama/ms-despacho:latest
     container_name: ms_despacho
-
     restart: always
-
     depends_on:
       - mysql
-
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/despacho_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/despacho_db?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-
     ports:
       - "8080:8080"
-
     networks:
-      - app-network
+      - capa-app
+      - capa-datos
 
   ms-venta:
-    build:
-      context: ./API-REST-VENTA
-
+    image: benjalizama/ms-venta:latest
     container_name: ms_venta
-
     restart: always
-
     depends_on:
       - mysql
-
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/venta_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/venta_db?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-
     ports:
       - "8081:8080"
-
     networks:
-      - app-network
+      - capa-app
+      - capa-datos
 
 volumes:
   mysql_data:
 
 networks:
-  app-network:
+  capa-app:
+    driver: bridge
+  capa-datos:
     driver: bridge
