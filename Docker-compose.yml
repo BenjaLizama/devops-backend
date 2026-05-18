@@ -22,7 +22,7 @@ services:
       - capa-datos
 
   ms-despacho:
-    image: benjalizama/ms-despacho:latest
+    image: benjaminlizama/ms-despacho:latest
     container_name: ms_despacho
     restart: always
     depends_on:
@@ -38,7 +38,7 @@ services:
       - capa-datos
 
   ms-venta:
-    image: benjalizama/ms-venta:latest
+    image: benjaminlizama/ms-venta:latest
     container_name: ms_venta
     restart: always
     depends_on:

@@ -61,3 +61,4 @@ jobs:
               "sudo docker image prune -f"
             ]' \
             --comment "Desplegando actualización de ms-venta"
+            --comment "Desplegando actualización de ms-venta"
