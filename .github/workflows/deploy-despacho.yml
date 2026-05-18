@@ -55,9 +55,9 @@ jobs:
             --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "cd /home/ubuntu",
-              "docker compose pull ms-despacho",
-              "docker compose up -d ms-despacho",
-              "docker image prune -f"
+              "cd /home/ssm-user",
+              "sudo docker-compose pull ms-despacho",
+              "sudo docker-compose up -d ms-despacho",
+              "sudo docker image prune -f"
             ]' \
             --comment "Desplegando actualización de ms-despacho"
