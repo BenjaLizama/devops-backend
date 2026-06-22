@@ -45,7 +45,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           # Cambia 'tienda-backend' por el nombre del repositorio ECR que vayas a usar
-          ECR_REPOSITORY: tienda-backend
+          ECR_REPOSITORY: ms-despacho
           IMAGE_TAG: latest
         working-directory: ./API-REST-VENTA
         run: |
