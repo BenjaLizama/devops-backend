@@ -5,7 +5,7 @@ metadata:
   labels:
     app: ms-despacho
 spec:
-  replicas: 2  # Levanta 2 pods para cumplir con la "Alta Disponibilidad" que te pide la pauta
+  replicas: 1
   selector:
     matchLabels:
       app: ms-despacho
@@ -16,17 +16,17 @@ spec:
     spec:
       containers:
         - name: ms-despacho
-          # Reemplaza con la URI exacta de tu ECR de la imagen anterior (anteponiendo tu ID de cuenta)
           image: 364786430131.dkr.ecr.us-east-1.amazonaws.com/ms-despacho:latest
           ports:
-            - containerPort: 8080 # El puerto en el que corre tu jar de Java
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "500m"
-              memory: "1Gi"
+            - containerPort: 8080
+          # ⬇️ AGREGA ESTE BLOQUE DE VARIABLES DE ENTORNO ⬇️
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql-service:3306/tienda_perritos?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "alumno"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "alumno123"
 ---
 apiVersion: v1
 kind: Service
