@@ -1,4 +1,4 @@
-name: Build and Deploy MS Venta
+name: Build and Deploy MS Venta to EKS
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout del código
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -21,33 +21,59 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # Compilar el JAR de Spring Boot con Maven
       - name: Build ms-venta
         working-directory: ./API-REST-VENTA
         run: mvn clean package -DskipTests
 
-      - name: Login Docker Hub
-        uses: docker/login-action@v3
+      # 1. Autenticarse en AWS (Se usan los secrets de tu AWS Academy)
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # Crucial para AWS Academy
+          aws-region: us-east-1
 
-      - name: Build Docker image
+      # 2. Reemplazo de Docker Hub: Login en AWS ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 3. Construir la imagen apuntando a tu ECR de AWS
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          # Cambia 'tienda-backend' por el nombre del repositorio ECR que vayas a usar
+          ECR_REPOSITORY: tienda-backend
+          IMAGE_TAG: latest
         working-directory: ./API-REST-VENTA
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/ms-venta:latest .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Push Docker image
-        run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/ms-venta:latest
-
-  deploy-to-ec2:
+  deploy-to-eks:
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
-      - name: Desplegar vía AWS SSM
+      - name: Checkout del código (para leer los manifiestos K8s)
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      # 4. Conectarse al clúster de Kubernetes en vez de la EC2
+      - name: Actualizar Kubeconfig para EKS
         run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set aws_session_token ${{ secrets.AWS_SESSION_TOKEN }}
-          aws configure set region us-east-1
-          aws ssm send-command --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" --document-name "AWS-RunShellScript" --parameters 'commands=["cd /home/ssm-user", "sudo docker-compose pull ms-venta", "sudo docker-compose up -d ms-venta", "sudo docker image prune -f"]' --comment "Desplegando actualización de ms-venta"
+          aws eks update-kubeconfig --name devopseks --region us-east-1
+
+      # 5. Aplicar los cambios en el clúster e indicarle que refresque los pods
+      - name: Desplegar en EKS
+        run: |
+          kubectl apply -f k8s/venta-deployment.yaml
+          kubectl rollout restart deployment/tienda-backend
