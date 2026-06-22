@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-venta-deployment
+  labels:
+    app: ms-venta
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ms-venta
+  template:
+    metadata:
+      labels:
+        app: ms-venta
+    spec:
+      containers:
+        - name: ms-venta
+          # Reemplaza con la URI de tu ECR para Venta (por ejemplo, el que reciclaste de la plantilla)
+          image: 364786430131.dkr.ecr.us-east-1.amazonaws.com/tienda-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            # Configuración de variables de entorno para que sepa dónde buscar al otro microservicio
+            - name: DESPACHO_API_URL
+              value: "http://ms-despacho-service:8080"
+            # Configuración de variables de entorno para tu base de datos (apuntando al pod de mysql)
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://tienda-db:3306/nombre_tu_bd"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-venta-service
+spec:
+  type: ClusterIP
+  selector:
+    app: ms-venta
+  ports:
+    - port: 8080
+      targetPort: 8080

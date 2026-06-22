@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-despacho-deployment  # <-- Este nombre debe coincidir con tu 'kubectl rollout restart'
+  labels:
+    app: ms-despacho
+spec:
+  replicas: 2  # Levanta 2 pods para cumplir con la "Alta Disponibilidad" que te pide la pauta
+  selector:
+    matchLabels:
+      app: ms-despacho
+  template:
+    metadata:
+      labels:
+        app: ms-despacho
+    spec:
+      containers:
+        - name: ms-despacho
+          # Reemplaza con la URI exacta de tu ECR de la imagen anterior (anteponiendo tu ID de cuenta)
+          image: 364786430131.dkr.ecr.us-east-1.amazonaws.com/ms-despacho:latest
+          ports:
+            - containerPort: 8080 # El puerto en el que corre tu jar de Java
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-despacho-service # <-- Nombre DNS interno para que otros ms lo llamen
+spec:
+  type: ClusterIP # Tipo interno (invisible desde internet, protegido dentro del clúster)
+  selector:
+    app: ms-despacho
+  ports:
+    - port: 8080
+      targetPort: 8080
