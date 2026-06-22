@@ -45,7 +45,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           # Cambia 'tienda-backend' por el nombre del repositorio ECR que vayas a usar
-          ECR_REPOSITORY: ms-despacho
+          ECR_REPOSITORY: tienda-backend
           IMAGE_TAG: latest
         working-directory: ./API-REST-VENTA
         run: |
@@ -76,4 +76,4 @@ jobs:
       - name: Desplegar en EKS
         run: |
           kubectl apply -f kubernetes/venta-deployment.yaml
-          kubectl rollout restart deployment/tienda-backend
+          kubectl rollout restart deployment/ms-venta-deployment
