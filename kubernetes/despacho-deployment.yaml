@@ -38,4 +38,4 @@ spec:
     app: ms-despacho
   ports:
     - port: 8080
-      targetPort: 8080
+      targetPort: 8081
