@@ -10,3 +10,4 @@ public class SpringbootApiRestApplication {
 		SpringApplication.run(SpringbootApiRestApplication.class, args);
 	}
 }
+
