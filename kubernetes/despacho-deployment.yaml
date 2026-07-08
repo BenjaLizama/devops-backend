@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: ms-despacho
-          image: 615406795391.dkr.ecr.us-east-1.amazonaws.com/ms-despacho:latest
+          image: 615406795391.dkr.ecr.us-east-1.amazonaws.com/ms-despacho:v1.0.0
           ports:
             - containerPort: 8080
           # ⬇️ AGREGA ESTE BLOQUE DE VARIABLES DE ENTORNO ⬇️
