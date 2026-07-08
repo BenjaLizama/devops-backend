@@ -23,7 +23,82 @@ backend devops/
 ├── Docker-compose.yml            # Orquestación de contenedores
 └── mysql/                        # Configuración relacionada a MySQL
 ```
+# Arquitectura del Clúster AWS (EKS)
 
+## Infraestructura
+
+La aplicación fue desplegada sobre Amazon Elastic Kubernetes Service (EKS) en la región **us-east-1**, utilizando una arquitectura basada en microservicios.
+
+### Componentes principales
+
+- Amazon EKS (Cluster: devopseks)
+- Node Group administrado por EKS
+- Amazon ECR para almacenar imágenes Docker
+- Elastic Load Balancer (ELB) para exponer el Frontend
+- Kubernetes Deployments
+- Kubernetes Services
+- Kubernetes Secrets
+- Horizontal Pod Autoscaler (HPA)
+- Metrics Server
+- Amazon CloudWatch (logs del plano de control)
+
+## Arquitectura
+
+Internet
+        │
+        ▼
+Elastic Load Balancer
+        │
+        ▼
+Frontend (Deployment)
+        │
+        ▼
+MS Venta (ClusterIP)
+        │
+        ▼
+MS Despacho (ClusterIP)
+        │
+        ▼
+MySQL (Namespace tienda)
+
+```
+
+## Red de Kubernetes
+
+| Recurso | Función |
+|---------|---------|
+| Deployment | Administración de Pods |
+| Service LoadBalancer | Exposición del Frontend |
+| Service ClusterIP | Comunicación interna entre microservicios |
+| Secret | Credenciales de la base de datos |
+| HPA | Escalado automático |
+| Metrics Server | Obtención de métricas CPU/Memoria |
+
+## Seguridad
+
+- Las credenciales de MySQL se almacenan mediante Kubernetes Secrets.
+- Las imágenes Docker se almacenan en Amazon ECR.
+- Los despliegues se realizan mediante GitHub Actions utilizando credenciales de AWS almacenadas como GitHub Secrets.
+
+## Flujo CI/CD
+
+1. Push a la rama deploy.
+2. GitHub Actions compila el proyecto.
+3. Se construye la imagen Docker.
+4. La imagen se publica en Amazon ECR.
+5. El pipeline se conecta al clúster EKS.
+6. Kubernetes actualiza el Deployment.
+7. Los Pods se recrean automáticamente.
+
+## Escalabilidad
+
+Cada microservicio posee un Horizontal Pod Autoscaler configurado utilizando métricas de CPU.
+
+- ms-venta
+- ms-despacho
+- tienda-frontend
+
+El escalado automático permite aumentar o disminuir la cantidad de Pods según la carga del sistema.
 ---
 
 # Tecnologías Utilizadas
