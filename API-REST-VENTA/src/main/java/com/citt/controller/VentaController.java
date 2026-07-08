@@ -62,6 +62,7 @@ public class VentaController {
         return ResponseEntity.noContent().build(); // Respuesta 204 No Content si se elimina correctamente
     }
     
+    
 }
 
 
