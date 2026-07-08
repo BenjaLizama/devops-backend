@@ -24,9 +24,12 @@ spec:
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:mysql://tienda-db.tienda:3306/tienda_perritos"
             - name: SPRING_DATASOURCE_USERNAME
-              value: "alumno"
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "alumno123"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
           resources:
               requests:
                 cpu: "50m"
