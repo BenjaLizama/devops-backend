@@ -61,7 +61,6 @@ public class VentaController {
         ventaService.deleteVenta(idVenta);
         return ResponseEntity.noContent().build(); // Respuesta 204 No Content si se elimina correctamente
     }
-    
 }
 
 
