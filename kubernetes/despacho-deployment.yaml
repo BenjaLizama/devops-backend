@@ -22,7 +22,7 @@ spec:
           # ⬇️ AGREGA ESTE BLOQUE DE VARIABLES DE ENTORNO ⬇️
           env:
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://mysql-service:3306/tienda_perritos?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+              value: "jdbc:mysql://tienda-db.tienda:3306/tienda_perritos"
             - name: SPRING_DATASOURCE_USERNAME
               value: "alumno"
             - name: SPRING_DATASOURCE_PASSWORD
