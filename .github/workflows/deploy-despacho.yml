@@ -77,4 +77,5 @@ jobs:
       - name: Desplegar en EKS
         run: |
           kubectl apply -f kubernetes/despacho-deployment.yaml
+          kubectl apply -f kubernetes/ms-despacho-hpa.yaml
           kubectl rollout restart deployment/ms-despacho-deployment

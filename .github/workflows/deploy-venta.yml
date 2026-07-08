@@ -73,7 +73,9 @@ jobs:
           aws eks update-kubeconfig --name devopseks --region us-east-1
 
       # 5. Aplicar los cambios en el clúster e indicarle que refresque los pods
+      
       - name: Desplegar en EKS
         run: |
           kubectl apply -f kubernetes/venta-deployment.yaml
+          kubectl apply -f kubernetes/ms-venta-hpa.yaml
           kubectl rollout restart deployment/ms-venta-deployment
